@@ -2,7 +2,7 @@ steps:
   # Docker Build
   - id: Build image
     name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '${_DOCKER_REGISTRY}/${_IMAGE_NAME}:${_IMAGE_VERSION}', 'docker']
+    args: ['build', '-t', '${_DOCKER_REGISTRY}/${_IMAGE_NAME}:${_IMAGE_VERSION}', 'cicd/docker']
 
   # Docker Push
   - id: Push image
