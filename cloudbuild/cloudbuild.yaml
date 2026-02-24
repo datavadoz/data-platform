@@ -1,11 +1,18 @@
 steps:
   # Docker Build
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/conda-root/data-platform/cicd:v1', 'docker']
+  - id: Build image
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_DOCKER_REGISTRY}/${_IMAGE_NAME}:${_IMAGE_VERSION}', 'docker']
 
   # Docker Push
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-southeast1-docker.pkg.dev/conda-root/data-platform/cicd:v1' ]
+  - id: Push image
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_DOCKER_REGISTRY}/${_IMAGE_NAME}:${_IMAGE_VERSION}']
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _DOCKER_REGISTRY: 'asia-southeast1-docker.pkg.dev/conda-root/data-platform'
+  _IMAGE_NAME: 'cicd'
+  _IMAGE_VERSION: '0.0.1'
