@@ -9,7 +9,6 @@ echo "=== Terraform plan ==="
 terraform plan
 
 echo "=== Terraform apply ==="
-BRANCH_NAME=$(git branch --show-current)
 if [ "${BRANCH_NAME}" == "main" ]; then
   terraform apply -auto-approve
 else
