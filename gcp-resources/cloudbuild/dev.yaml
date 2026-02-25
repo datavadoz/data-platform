@@ -1,0 +1,13 @@
+steps:
+  # Run Terraform
+  - id: Run Terraform
+    name: '${_DOCKER_REGISTRY}/${_CICD_IMAGE_NAME}:${_CICD_IMAGE_VERSION}'
+    args: ['/bin/bash', './gcp-resources/run.sh']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _DOCKER_REGISTRY: 'asia-southeast1-docker.pkg.dev/conda-root/data-platform'
+  _CICD_IMAGE_NAME: 'cicd'
+  _CICD_IMAGE_VERSION: '0.0.1'
