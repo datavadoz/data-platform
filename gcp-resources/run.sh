@@ -9,7 +9,7 @@ echo "=== Terraform plan ==="
 terraform plan
 
 echo "=== Terraform apply ==="
-if [ "${BRANCH_NAME}" == "main" ]; then
+if [ "${BRANCH_NAME}" == "\${main}" ]; then
   terraform apply -auto-approve
 else
   echo "Ignore TF apply for ${BRANCH_NAME}"
