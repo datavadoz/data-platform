@@ -18,13 +18,15 @@ resource "google_folder" "cellphones" {
 }
 
 resource "google_project" "cellphones_dev" {
-  name       = "cellphones-dev"
-  project_id = "cellphones-dev"
-  folder_id  = google_folder.cellphones.name
+  name            = "cellphones-dev"
+  project_id      = "cellphones-dev"
+  folder_id       = google_folder.cellphones.name
+  deletion_policy = "DELETE"
 }
 
 resource "google_project" "cellphones_prod" {
-  name       = "cellphones-prod"
-  project_id = "cellphones-prod"
-  folder_id  = google_folder.cellphones.name
+  name            = "cellphones-prod"
+  project_id      = "cellphones-prod"
+  folder_id       = google_folder.cellphones.name
+  deletion_policy = "DELETE"
 }
