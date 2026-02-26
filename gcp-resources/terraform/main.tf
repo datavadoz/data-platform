@@ -17,17 +17,17 @@ resource "google_folder" "cellphones" {
   parent       = "organizations/138569242965"
 }
 
-resource "google_project" "cellphones_dev" {
-  name            = "cellphones-dev"
-  project_id      = "cellphones-dev"
+resource "google_project" "conda_cps_dev" {
+  name            = "conda-cps-dev"
+  project_id      = "conda-cps-dev"
   billing_account = "01DDAB-3D0A6F-F91FAF"
   folder_id       = google_folder.cellphones.name
   deletion_policy = "DELETE"
 }
 
-resource "google_project" "cellphones_prod" {
-  name            = "cellphones-prod"
-  project_id      = "cellphones-prod"
+resource "google_project" "conda_cps_prod" {
+  name            = "conda-cps-prod"
+  project_id      = "conda-cps-prod"
   billing_account = "01DDAB-3D0A6F-F91FAF"
   folder_id       = google_folder.cellphones.name
   deletion_policy = "DELETE"
