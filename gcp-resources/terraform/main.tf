@@ -33,26 +33,26 @@ resource "google_project" "conda_cps_prod" {
   deletion_policy = "DELETE"
 }
 
-module "sa_conda_cps_cloudrun_dev" {
-  source        = "terraform-google-modules/service-accounts/google"
-  version       = "4.7"
-  project_id    = google_project.conda_cps_dev.id
-  prefix        = "sa-"
-  names         = ["cloudrun"]
-  project_roles = [
-    "${google_project.conda_cps_dev.id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_dev.id}=>roles/bigquery.jobUser",
-  ]
-}
+# module "sa_conda_cps_cloudrun_dev" {
+#   source        = "terraform-google-modules/service-accounts/google"
+#   version       = "4.7"
+#   project_id    = google_project.conda_cps_dev.id
+#   prefix        = "sa-"
+#   names         = ["cloudrun"]
+#   project_roles = [
+#     "${google_project.conda_cps_dev.id}=>roles/bigquery.dataEditor",
+#     "${google_project.conda_cps_dev.id}=>roles/bigquery.jobUser",
+#   ]
+# }
 
-module "sa_conda_cps_cloudrun_prod" {
-  source        = "terraform-google-modules/service-accounts/google"
-  version       = "4.7"
-  project_id    = google_project.conda_cps_prod.id
-  prefix        = "sa-"
-  names         = ["cloudrun"]
-  project_roles = [
-    "${google_project.conda_cps_prod.id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_prod.id}=>roles/bigquery.jobUser",
-  ]
-}
+# module "sa_conda_cps_cloudrun_prod" {
+#   source        = "terraform-google-modules/service-accounts/google"
+#   version       = "4.7"
+#   project_id    = google_project.conda_cps_prod.id
+#   prefix        = "sa-"
+#   names         = ["cloudrun"]
+#   project_roles = [
+#     "${google_project.conda_cps_prod.id}=>roles/bigquery.dataEditor",
+#     "${google_project.conda_cps_prod.id}=>roles/bigquery.jobUser",
+#   ]
+# }
