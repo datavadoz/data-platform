@@ -2,7 +2,7 @@ FROM ubuntu:26.04
 
 # Install required softwares
 RUN apt update -y && \
-    apt install -y wget unzip python3 curl
+    apt install -y wget unzip python3 curl git
 
 # Install Terraform
 RUN mkdir /tmp/terraform && \

@@ -3,10 +3,10 @@
 cd gcp-resources/terraform
 
 echo "=== Terraform init ==="
-terraform init
+terraform init -upgrade || exit 1
 
 echo "=== Terraform plan ==="
-terraform plan
+terraform plan || exit 1
 
 echo "=== Terraform apply ==="
 if [ "${BRANCH_NAME}" == "\${main}" ]; then
