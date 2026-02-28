@@ -3,7 +3,7 @@
 cd gcp-resources/terraform
 
 echo "=== Terraform init ==="
-terraform init -upgrade
+terraform init -upgrade || exit 1
 
 echo "=== Terraform plan ==="
 terraform plan || exit 1
