@@ -17,12 +17,12 @@ module "prj_conda_cps_dev" {
 module "sa_conda_cps_cloudrun_dev" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "4.7"
-  project_id    = google_project.conda_cps_dev.project_id
+  project_id    = module.prj_conda_cps_dev.project_id
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${google_project.conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_dev.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
   ]
 }
 
@@ -40,11 +40,11 @@ module "prj_conda_cps_prod" {
 module "sa_conda_cps_cloudrun_prod" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "4.7"
-  project_id    = google_project.conda_cps_prod.project_id
+  project_id    = module.prj_conda_cps_prod.project_id
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${google_project.conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_prod.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
   ]
 }
