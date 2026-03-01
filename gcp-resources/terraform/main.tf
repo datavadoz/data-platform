@@ -2,7 +2,12 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "6.8.0"
+      version = " 7.21.0 "
+    }
+
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = " 7.21.0 "
     }
   }
 
@@ -17,42 +22,26 @@ resource "google_folder" "cellphones" {
   parent       = "organizations/138569242965"
 }
 
-resource "google_project" "conda_cps_dev" {
-  name            = "conda-cps-dev"
-  project_id      = "conda-cps-dev"
-  billing_account = "01DDAB-3D0A6F-F91FAF"
-  folder_id       = google_folder.cellphones.name
-  deletion_policy = "DELETE"
-}
+# module "sa_conda_cps_cloudrun_dev" {
+#   source        = "terraform-google-modules/service-accounts/google"
+#   version       = "4.7"
+#   project_id    = google_project.conda_cps_dev.project_id
+#   prefix        = "sa"
+#   names         = ["cloudrun"]
+#   project_roles = [
+#     "${google_project.conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
+#     "${google_project.conda_cps_dev.project_id}=>roles/bigquery.jobUser",
+#   ]
+# }
 
-resource "google_project" "conda_cps_prod" {
-  name            = "conda-cps-prod"
-  project_id      = "conda-cps-prod"
-  billing_account = "01DDAB-3D0A6F-F91FAF"
-  folder_id       = google_folder.cellphones.name
-  deletion_policy = "DELETE"
-}
-
-module "sa_conda_cps_cloudrun_dev" {
-  source        = "terraform-google-modules/service-accounts/google"
-  version       = "4.7"
-  project_id    = google_project.conda_cps_dev.project_id
-  prefix        = "sa"
-  names         = ["cloudrun"]
-  project_roles = [
-    "${google_project.conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_dev.project_id}=>roles/bigquery.jobUser",
-  ]
-}
-
-module "sa_conda_cps_cloudrun_prod" {
-  source        = "terraform-google-modules/service-accounts/google"
-  version       = "4.7"
-  project_id    = google_project.conda_cps_prod.project_id
-  prefix        = "sa"
-  names         = ["cloudrun"]
-  project_roles = [
-    "${google_project.conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
-    "${google_project.conda_cps_prod.project_id}=>roles/bigquery.jobUser",
-  ]
-}
+# module "sa_conda_cps_cloudrun_prod" {
+#   source        = "terraform-google-modules/service-accounts/google"
+#   version       = "4.7"
+#   project_id    = google_project.conda_cps_prod.project_id
+#   prefix        = "sa"
+#   names         = ["cloudrun"]
+#   project_roles = [
+#     "${google_project.conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
+#     "${google_project.conda_cps_prod.project_id}=>roles/bigquery.jobUser",
+#   ]
+# }
