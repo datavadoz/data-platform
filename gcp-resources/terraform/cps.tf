@@ -4,47 +4,47 @@ resource "google_folder" "cellphones" {
 }
 
 ### DEV ###
-module "prj_cps_dev" {
+module "prj_conda_cps_dev" {
   source  = "terraform-google-modules/project-factory/google"
   version = "18.2"
 
-  name            = "cps-dev"
+  name            = "conda-cps-dev"
   billing_account = "01DDAB-3D0A6F-F91FAF"
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
 }
 
-module "sa_cps_cloudrun_dev" {
+module "sa_conda_cps_cloudrun_dev" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "4.7"
-  project_id    = module.prj_cps_dev.project_id
+  project_id    = module.prj_conda_cps_dev.project_id
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${module.prj_cps_dev.project_id}=>roles/bigquery.dataEditor",
-    "${module.prj_cps_dev.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
   ]
 }
 
 ### PROD ###
-module "prj_cps_prod" {
+module "prj_conda_cps_prod" {
   source  = "terraform-google-modules/project-factory/google"
   version = "18.2"
 
-  name            = "cps-prod"
+  name            = "conda-cps-prod"
   billing_account = "01DDAB-3D0A6F-F91FAF"
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
 }
 
-module "sa_cps_cloudrun_prod" {
+module "sa_conda_cps_cloudrun_prod" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "4.7"
-  project_id    = module.prj_cps_prod.project_id
+  project_id    = module.prj_conda_cps_prod.project_id
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${module.prj_cps_prod.project_id}=>roles/bigquery.dataEditor",
-    "${module.prj_cps_prod.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
   ]
 }
