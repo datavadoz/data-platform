@@ -12,6 +12,12 @@ module "prj_conda_cps_dev" {
   billing_account = "01DDAB-3D0A6F-F91FAF"
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
+  activate_apis   = [
+    "bigquery.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
+  ]
 }
 
 module "prj_conda_cps_iam_dev" {
@@ -48,6 +54,12 @@ module "prj_conda_cps_prod" {
   billing_account = "01DDAB-3D0A6F-F91FAF"
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
+  activate_apis   = [
+    "bigquery.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
+  ]
 }
 
 module "prj_conda_cps_iam_prod" {
