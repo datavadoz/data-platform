@@ -14,6 +14,19 @@ module "prj_conda_cps_dev" {
   folder_id       = google_folder.cellphones.name
 }
 
+module "prj_conda_cps_iam_dev" {
+  source  = "terraform-google-modules/iam/google//modules/projects_iam"
+  version = "8.2"
+
+  projects = [module.prj_conda_cps_dev.project_id]
+
+  bindings = {
+    "roles/owner" = [
+      "user:danh.vo@conda.fun"
+    ]
+  }
+}
+
 module "sa_conda_cps_cloudrun_dev" {
   source        = "terraform-google-modules/service-accounts/google"
   version       = "4.7"
@@ -35,6 +48,19 @@ module "prj_conda_cps_prod" {
   billing_account = "01DDAB-3D0A6F-F91FAF"
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
+}
+
+module "prj_conda_cps_iam_prod" {
+  source  = "terraform-google-modules/iam/google//modules/projects_iam"
+  version = "8.2"
+
+  projects = [module.prj_conda_cps_prod.project_id]
+
+  bindings = {
+    "roles/owner" = [
+      "user:danh.vo@conda.fun"
+    ]
+  }
 }
 
 module "sa_conda_cps_cloudrun_prod" {
