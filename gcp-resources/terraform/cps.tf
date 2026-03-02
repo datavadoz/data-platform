@@ -14,17 +14,17 @@ module "prj_conda_cps_dev" {
   folder_id       = google_folder.cellphones.name
 }
 
-# module "sa_conda_cps_cloudrun_dev" {
-#   source        = "terraform-google-modules/service-accounts/google"
-#   version       = "4.7"
-#   project_id    = module.prj_conda_cps_dev.project_id
-#   prefix        = "sa"
-#   names         = ["cloudrun"]
-#   project_roles = [
-#     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
-#     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
-#   ]
-# }
+module "sa_conda_cps_cloudrun_dev" {
+  source        = "terraform-google-modules/service-accounts/google"
+  version       = "4.7"
+  project_id    = module.prj_conda_cps_dev.project_id
+  prefix        = "sa"
+  names         = ["cloudrun"]
+  project_roles = [
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
+  ]
+}
 
 ### PROD ###
 module "prj_conda_cps_prod" {
@@ -37,14 +37,14 @@ module "prj_conda_cps_prod" {
   folder_id       = google_folder.cellphones.name
 }
 
-# module "sa_conda_cps_cloudrun_prod" {
-#   source        = "terraform-google-modules/service-accounts/google"
-#   version       = "4.7"
-#   project_id    = module.prj_conda_cps_prod.project_id
-#   prefix        = "sa"
-#   names         = ["cloudrun"]
-#   project_roles = [
-#     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
-#     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
-#   ]
-# }
+module "sa_conda_cps_cloudrun_prod" {
+  source        = "terraform-google-modules/service-accounts/google"
+  version       = "4.7"
+  project_id    = module.prj_conda_cps_prod.project_id
+  prefix        = "sa"
+  names         = ["cloudrun"]
+  project_roles = [
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
+  ]
+}
