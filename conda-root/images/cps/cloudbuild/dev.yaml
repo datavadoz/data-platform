@@ -1,0 +1,13 @@
+steps:
+  # Docker Build
+  - id: Build image
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_DOCKER_REGISTRY}/${_IMAGE_NAME}:${_IMAGE_VERSION}', 'conda-root/images/cps/docker']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _DOCKER_REGISTRY: 'asia-southeast1-docker.pkg.dev/conda-root/data-platform'
+  _IMAGE_NAME: 'cps'
+  _IMAGE_VERSION: '0.0.1'
