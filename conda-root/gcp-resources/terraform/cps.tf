@@ -1,6 +1,6 @@
 resource "google_folder" "cellphones" {
   display_name = "CellphoneS"
-  parent       = "organizations/138569242965"
+  parent       = "organizations/${var.org_id}"
 }
 
 ### DEV ###
@@ -9,12 +9,13 @@ module "prj_conda_cps_dev" {
   version = "18.2"
 
   name            = "conda-cps-dev"
-  billing_account = "01DDAB-3D0A6F-F91FAF"
+  billing_account = var.billing_account
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
   activate_apis   = [
     "bigquery.googleapis.com",
     "cloudbuild.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
   ]
@@ -28,7 +29,7 @@ module "prj_conda_cps_iam_dev" {
 
   bindings = {
     "roles/owner" = [
-      "user:danh.vo@conda.fun"
+      "user:${var.owner_email}"
     ]
   }
 }
@@ -43,7 +44,44 @@ module "sa_conda_cps_cloudrun_dev" {
     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_dev.project_id}=>roles/iam.serviceAccountTokenCreator",
+    "${module.prj_conda_cps_dev.project_id}=>roles/run.invoker",
   ]
+}
+
+resource "google_cloud_run_v2_job" "cps_dev" {
+  project  = module.prj_conda_cps_dev.project_id
+  name     = "monitor-run-rate"
+  location = var.region
+
+  template {
+    template {
+      service_account = module.sa_conda_cps_cloudrun_dev.email
+
+      containers {
+        image   = local.cps_image
+        command = ["echo"]
+        args    = ["Hello World"]
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "cps_dev" {
+  project          = module.prj_conda_cps_dev.project_id
+  name             = "monitor-run-rate"
+  region           = var.region
+  schedule         = "0 8 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.cps_dev.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_dev.email
+    }
+  }
 }
 
 ### PROD ###
@@ -52,12 +90,13 @@ module "prj_conda_cps_prod" {
   version = "18.2"
 
   name            = "conda-cps-prod"
-  billing_account = "01DDAB-3D0A6F-F91FAF"
+  billing_account = var.billing_account
   deletion_policy = "DELETE"
   folder_id       = google_folder.cellphones.name
   activate_apis   = [
     "bigquery.googleapis.com",
     "cloudbuild.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
   ]
@@ -71,7 +110,7 @@ module "prj_conda_cps_iam_prod" {
 
   bindings = {
     "roles/owner" = [
-      "user:danh.vo@conda.fun"
+      "user:${var.owner_email}"
     ]
   }
 }
@@ -86,5 +125,6 @@ module "sa_conda_cps_cloudrun_prod" {
     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_prod.project_id}=>roles/iam.serviceAccountTokenCreator",
+    "${module.prj_conda_cps_prod.project_id}=>roles/run.invoker",
   ]
 }
