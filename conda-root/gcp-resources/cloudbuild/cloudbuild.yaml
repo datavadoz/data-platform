@@ -4,7 +4,7 @@ steps:
     name: '${_DOCKER_REGISTRY}/${_CICD_IMAGE_NAME}:${_CICD_IMAGE_VERSION}'
     env:
       - 'BRANCH_NAME=${$BRANCH_NAME}'
-    args: ['/bin/bash', './gcp-resources/run.sh']
+    args: ['/bin/bash', './conda-root/gcp-resources/run.sh']
 
 options:
   logging: CLOUD_LOGGING_ONLY
