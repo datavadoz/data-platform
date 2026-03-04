@@ -48,7 +48,7 @@ module "sa_conda_cps_cloudrun_dev" {
   ]
 }
 
-resource "google_cloud_run_v2_job" "cps_dev" {
+resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
   project  = module.prj_conda_cps_dev.project_id
   name     = "monitor-run-rate"
   location = var.region
@@ -66,7 +66,7 @@ resource "google_cloud_run_v2_job" "cps_dev" {
   }
 }
 
-resource "google_cloud_scheduler_job" "cps_dev" {
+resource "google_cloud_scheduler_job" "monitor_run_rate_dev" {
   project          = module.prj_conda_cps_dev.project_id
   name             = "monitor-run-rate"
   region           = var.region
@@ -76,7 +76,7 @@ resource "google_cloud_scheduler_job" "cps_dev" {
 
   http_target {
     http_method = "POST"
-    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.cps_dev.name}:run"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.monitor_run_rate_dev.name}:run"
 
     oauth_token {
       service_account_email = module.sa_conda_cps_cloudrun_dev.email
