@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd gcp-resources/terraform
+cd conda-root/gcp-resources/terraform
 
 echo "=== Terraform init ==="
 terraform init -upgrade || exit 1
