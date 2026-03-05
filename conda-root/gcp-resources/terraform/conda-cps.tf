@@ -59,8 +59,8 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
 
       containers {
         image   = local.cps_image
-        command = ["echo"]
-        args    = ["Hello World"]
+        command = ["/bin/bash", "-c"]
+        args    = ["./run.sh", "dev"]
       }
     }
   }
