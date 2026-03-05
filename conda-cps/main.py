@@ -20,3 +20,6 @@ def main():
     result = query_job.result()
     for row in result:
         print(row['greeting'])
+
+
+main()
