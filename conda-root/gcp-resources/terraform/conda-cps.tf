@@ -55,11 +55,13 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
 
   template {
     template {
+      max_retries     = 0
       service_account = module.sa_conda_cps_cloudrun_dev.email
+      timeout         = "300s"
 
       containers {
         image   = local.cps_image
-        command = ["/bin/bash", "-c"]
+        command = ["/bin/bash"]
         args    = ["./run.sh", "dev"]
       }
     }
@@ -127,4 +129,42 @@ module "sa_conda_cps_cloudrun_prod" {
     "${module.prj_conda_cps_prod.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_prod.project_id}=>roles/run.invoker",
   ]
+}
+
+resource "google_cloud_run_v2_job" "monitor_run_rate_prod" {
+  project  = module.prj_conda_cps_prod.project_id
+  name     = "monitor-run-rate"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_prod.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./run.sh", "prod"]
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "monitor_run_rate_prod" {
+  project          = module.prj_conda_cps_prod.project_id
+  name             = "monitor-run-rate"
+  region           = var.region
+  schedule         = "0 8 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.monitor_run_rate_prod.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_prod.email
+    }
+  }
 }
