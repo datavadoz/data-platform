@@ -7,6 +7,7 @@ module "prj_conda_root_iam_dev" {
   bindings = {
     "roles/artifactregistry.reader" = [
       "serviceAccount:service-${module.prj_conda_cps_dev.project_number}@serverless-robot-prod.iam.gserviceaccount.com",
+      "serviceAccount:service-${module.prj_conda_cps_prod.project_number}@serverless-robot-prod.iam.gserviceaccount.com",
     ]
   }
 }
