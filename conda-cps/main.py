@@ -1,5 +1,6 @@
 import argparse
 
+import google.auth
 from google.cloud import bigquery
 
 
@@ -14,13 +15,14 @@ def main():
     project_id = "conda-cps-dev" if args.env == "dev" else "conda-cps-prod"
     full_table_id = f"{project_id}.external_gsheet.run_rate"
 
-    client = bigquery.Client(
+    credentials, _ = google.auth.default(
         scopes=[
             'https://www.googleapis.com/auth/bigquery',
             'https://www.googleapis.com/auth/cloud-platform',
             'https://www.googleapis.com/auth/drive',
         ]
     )
+    client = bigquery.Client(credentials=credentials)
 
     # Create external table
     client.delete_table(full_table_id, not_found_ok=True)
@@ -37,6 +39,7 @@ def main():
     ext_config.options.range = "Cost runrate!A2:AF71"
     bq_table.external_data_configuration = ext_config
     client.create_table(bq_table)
+    print(f"External table {full_table_id} created successfully.")
 
 
 if __name__ == "__main__":
