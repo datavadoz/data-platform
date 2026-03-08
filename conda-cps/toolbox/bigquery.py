@@ -1,5 +1,4 @@
 import json
-import os
 
 import google.auth
 from google.cloud import bigquery
@@ -11,16 +10,15 @@ class GSheetTable:
         self,
         sheet_id: str,
         tab_name: str,
-        schema_name: str
+        schema_path: str
     ):
         self.sheet_id = sheet_id
         self.tab_name = tab_name
-        self.schema_name = schema_name
+        self.schema_path = schema_path
         self.url = f'https://docs.google.com/spreadsheets/d/{sheet_id}'
 
     def get_schema(self) -> list[dict]:
-        schema_path = os.path.join('schemas', self.schema_name)
-        with open(schema_path, 'r') as f:
+        with open(self.schema_path, 'r') as f:
             schema_str = f.read()
         return json.loads(schema_str)
 
