@@ -1,5 +1,15 @@
+import argparse
+
 from toolbox.bigquery import BigQuery, GSheetTable
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--env", choices=["dev", "prod"], required=True,
+    help="Deployment environment"
+)
+
+args = parser.parse_args()
+project_id = "conda-cps-dev" if args.env == "dev" else "conda-cps-prod"
 
 bq = BigQuery()
 bq.create_bq_table_from_gsheet_table(
@@ -8,6 +18,6 @@ bq.create_bq_table_from_gsheet_table(
         tab_name='Cost runrate!A2:AF71',
         schema_name='run_rate.json'
     ),
-    full_table_id='datavadoz-438714.cps_monitor_gsheet.cost_run_rate',
+    full_table_id=f"{project_id}.external_gsheet.run_rate",
     recreate_if_exists=True
 )
