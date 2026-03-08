@@ -19,4 +19,5 @@ fi
 
 git clone https://github.com/datavadoz/data-platform.git
 git -C ./data-platform checkout "$BRANCH"
+export PYTHONPATH=./data-platform/conda-cps:$PYTHONPATH
 python ./data-platform/conda-cps/main.py --env "$1"
