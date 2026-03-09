@@ -18,6 +18,7 @@ module "prj_conda_cps_dev" {
     "cloudscheduler.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
+    "secretmanager.googleapis.com",
   ]
 }
 
@@ -112,6 +113,7 @@ module "prj_conda_cps_prod" {
     "cloudscheduler.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
+    "secretmanager.googleapis.com",
   ]
 }
 
