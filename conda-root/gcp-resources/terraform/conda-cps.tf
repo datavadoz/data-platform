@@ -46,6 +46,7 @@ module "sa_conda_cps_cloudrun_dev" {
     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_dev.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_dev.project_id}=>roles/run.invoker",
+    "${module.prj_conda_cps_dev.project_id}=>roles/secretmanager.secretAccessor",
   ]
 }
 
@@ -64,6 +65,16 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
         image   = local.cps_image
         command = ["/bin/bash"]
         args    = ["./run.sh", "dev"]
+
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
@@ -141,6 +152,7 @@ module "sa_conda_cps_cloudrun_prod" {
     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_prod.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_prod.project_id}=>roles/run.invoker",
+    "${module.prj_conda_cps_prod.project_id}=>roles/secretmanager.secretAccessor",
   ]
 }
 
@@ -159,6 +171,16 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_prod" {
         image   = local.cps_image
         command = ["/bin/bash"]
         args    = ["./run.sh", "prod"]
+
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
