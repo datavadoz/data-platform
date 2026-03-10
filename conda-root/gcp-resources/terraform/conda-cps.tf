@@ -46,14 +46,22 @@ module "sa_conda_cps_cloudrun_dev" {
     "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_dev.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_dev.project_id}=>roles/run.invoker",
-    "${module.prj_conda_cps_dev.project_id}=>roles/secretmanager.secretAccessor",
   ]
+}
+
+resource "google_secret_manager_secret_iam_member" "lark_secret_dev_accessor" {
+  project   = module.prj_conda_cps_dev.project_id
+  secret_id = "LARK_SECRET"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.sa_conda_cps_cloudrun_dev.email}"
 }
 
 resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
   project  = module.prj_conda_cps_dev.project_id
   name     = "monitor-run-rate"
   location = var.region
+
+  depends_on = [google_secret_manager_secret_iam_member.lark_secret_dev_accessor]
 
   template {
     template {
@@ -152,14 +160,22 @@ module "sa_conda_cps_cloudrun_prod" {
     "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
     "${module.prj_conda_cps_prod.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_prod.project_id}=>roles/run.invoker",
-    "${module.prj_conda_cps_prod.project_id}=>roles/secretmanager.secretAccessor",
   ]
+}
+
+resource "google_secret_manager_secret_iam_member" "lark_secret_prod_accessor" {
+  project   = module.prj_conda_cps_prod.project_id
+  secret_id = "LARK_SECRET"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.sa_conda_cps_cloudrun_prod.email}"
 }
 
 resource "google_cloud_run_v2_job" "monitor_run_rate_prod" {
   project  = module.prj_conda_cps_prod.project_id
   name     = "monitor-run-rate"
   location = var.region
+
+  depends_on = [google_secret_manager_secret_iam_member.lark_secret_prod_accessor]
 
   template {
     template {
