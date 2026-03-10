@@ -1,5 +1,7 @@
 import argparse
 import os
+import requests
+import time
 
 from google.cloud import bigquery
 import polars as pl
@@ -49,6 +51,30 @@ NOTIFY_TEMPLATE = """=== RUN-RATE: *{dmc3}*
 - Criteo RE % actual/plan: {actual_vs_plan_criteo_re}
 - Criteo NEW % actual/plan: {actual_vs_plan_criteo_new}
 """
+
+lark_secret = os.environ.get('LARK_SECRET', '')
+
+if not lark_secret:
+    print("LARK_SECRET is not set. Skipping notification.")
+    exit(1)
+
+lark_secret = json.loads(lark_secret)
+app_id = lark_secret.get('app_id')
+app_secret = lark_secret.get('app_secret')
+receiver_ids = lark_secret.get('receiver_ids', [])
+
+response = requests.post(
+    'https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal',
+    headers={"Content-Type": "application/json"},
+    json={
+        'app_id': app_id,
+        'app_secret': app_secret,
+    },
+)
+
+result = response.json()
+access_token = result.get('tenant_access_token')
+
 
 bq = BigQuery()
 bq.create_bq_table_from_gsheet_table(
@@ -118,15 +144,26 @@ for row in result.rows(named=True):
         target_sales=target_sales
     )
 
-    print(msg)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}',
+    }
 
-    print("-" * 50)
+    params = {
+        'receive_id_type': 'chat_id',
+    }
 
-    lark_secret = os.environ.get('LARK_SECRET', '')
+    for receiver_id in receiver_ids:
+        json_data = {
+            'content': json.dumps({'text': msg}),
+            'msg_type': 'text',
+            'receive_id': receiver_id
+        }
 
-    if not lark_secret:
-        print("LARK_SECRET is not set. Skipping notification.")
-        exit(1)
+        response = requests.post(
+            'https://open.larksuite.com/open-apis/im/v1/messages',
+            params=params, headers=headers, json=json_data
+        )
 
-    lark_secret = json.loads(lark_secret)
-    print(lark_secret)
+        print(f"Notification sent to {receiver_id}, response status: {response.status_code}, response body: {response.text}")
+        time.sleep(3)
