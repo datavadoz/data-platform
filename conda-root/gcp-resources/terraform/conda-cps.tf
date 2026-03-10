@@ -66,15 +66,15 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
         command = ["/bin/bash"]
         args    = ["./run.sh", "dev"]
 
-        # env {
-        #   name = "LARK_SECRET"
-        #   value_source {
-        #     secret_key_ref {
-        #       secret  = "LARK_SECRET"
-        #       version = "latest"
-        #     }
-        #   }
-        # }
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
@@ -172,15 +172,15 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_prod" {
         command = ["/bin/bash"]
         args    = ["./run.sh", "prod"]
 
-        # env {
-        #   name = "LARK_SECRET"
-        #   value_source {
-        #     secret_key_ref {
-        #       secret  = "LARK_SECRET"
-        #       version = "latest"
-        #     }
-        #   }
-        # }
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
