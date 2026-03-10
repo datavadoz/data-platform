@@ -3,6 +3,7 @@ import os
 
 from google.cloud import bigquery
 import polars as pl
+import json
 
 from toolbox.bigquery import BigQuery, GSheetTable
 
@@ -118,3 +119,14 @@ for row in result.rows(named=True):
     )
 
     print(msg)
+
+    print("-" * 50)
+
+    lark_secret = os.environ.get('LARK_SECRET', '')
+
+    if not lark_secret:
+        print("LARK_SECRET is not set. Skipping notification.")
+        exit(1)
+
+    lark_secret = json.loads(lark_secret)
+    print(lark_secret)
