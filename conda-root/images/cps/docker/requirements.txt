@@ -1,4 +1,6 @@
 google-cloud-bigquery==3.40.1
+google-cloud-bigquery-storage==2.36.2
+google-cloud-storage==3.9.0
 polars==1.38.1
 pyarrow==23.0.1
 requests==2.32.5
