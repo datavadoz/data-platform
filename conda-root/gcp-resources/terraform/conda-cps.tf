@@ -42,8 +42,7 @@ module "sa_conda_cps_cloudrun_dev" {
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.dataEditor",
-    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_dev.project_id}=>roles/bigquery.user",
     "${module.prj_conda_cps_dev.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_dev.project_id}=>roles/run.invoker",
     "${module.prj_conda_cps_dev.project_id}=>roles/secretmanager.secretAccessor",
@@ -148,8 +147,7 @@ module "sa_conda_cps_cloudrun_prod" {
   prefix        = "sa"
   names         = ["cloudrun"]
   project_roles = [
-    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.dataEditor",
-    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.jobUser",
+    "${module.prj_conda_cps_prod.project_id}=>roles/bigquery.user",
     "${module.prj_conda_cps_prod.project_id}=>roles/iam.serviceAccountTokenCreator",
     "${module.prj_conda_cps_prod.project_id}=>roles/run.invoker",
     "${module.prj_conda_cps_prod.project_id}=>roles/secretmanager.secretAccessor",
