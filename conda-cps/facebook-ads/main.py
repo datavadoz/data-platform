@@ -4,7 +4,7 @@ from toolbox.crawler import Crawler
 from toolbox.facebook import FacebookAds
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run rate notification job")
+    parser = argparse.ArgumentParser(description="Crawl Facebook Ads")
     parser.add_argument(
         "--env",
         choices=["dev", "prod"],
