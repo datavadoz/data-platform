@@ -98,6 +98,44 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_dev" {
   }
 }
 
+resource "google_cloud_run_v2_job" "crawl_facebook_dev" {
+  project  = module.prj_conda_cps_dev.project_id
+  name     = "crawl-facebook"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_dev.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./crawl.sh", "dev"]
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "crawl_facebook_dev" {
+  project          = module.prj_conda_cps_dev.project_id
+  name             = "crawl-facebook"
+  region           = var.region
+  schedule         = "0 8 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.crawl_facebook_dev.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_dev.email
+    }
+  }
+}
+
 module "bq_conda_cps_dev" {
   source  = "terraform-google-modules/bigquery/google"
   version = "10.2.1"
@@ -208,6 +246,44 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_prod" {
   http_target {
     http_method = "POST"
     uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.monitor_run_rate_prod.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_prod.email
+    }
+  }
+}
+
+resource "google_cloud_run_v2_job" "crawl_facebook_prod" {
+  project  = module.prj_conda_cps_prod.project_id
+  name     = "crawl-facebook"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_prod.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./crawl.sh", "prod"]
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "crawl_facebook_prod" {
+  project          = module.prj_conda_cps_prod.project_id
+  name             = "crawl-facebook"
+  region           = var.region
+  schedule         = "0 8 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.crawl_facebook_prod.name}:run"
 
     oauth_token {
       service_account_email = module.sa_conda_cps_cloudrun_prod.email
