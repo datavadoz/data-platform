@@ -112,7 +112,7 @@ resource "google_cloud_run_v2_job" "crawl_facebook_dev" {
       containers {
         image   = local.cps_image
         command = ["/bin/bash"]
-        args    = ["./crawl.sh", "dev"]
+        args    = ["./crawl.sh", "dev", "facebook"]
       }
     }
   }
@@ -267,7 +267,7 @@ resource "google_cloud_run_v2_job" "crawl_facebook_prod" {
       containers {
         image   = local.cps_image
         command = ["/bin/bash"]
-        args    = ["./crawl.sh", "prod"]
+        args    = ["./crawl.sh", "prod", "facebook"]
       }
     }
   }
