@@ -6,14 +6,11 @@ from datetime import datetime
 from pathlib import Path
 
 import polars as pl
-from google.oauth2 import service_account
+import requests
+from google.cloud import bigquery
 
 from toolbox.bigquery import BigQuery
 
-
-COOKIES = {
-    'rd_challenge': 'Q_6hBQM4KjR9M7jvhED4-OWUDUYPh3LO3BXZQubnS4ZLSkf3YlEtyf9oXHJW--VJl3gwnP8PsEX0iYUCF4NqGDhJJlr4pw',
-}
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',
@@ -105,11 +102,33 @@ class FacebookAds:
         self.crawler = crawler
         self.bq = BigQuery()
         self.bq_client = self.bq.get_client()
+        self.rd_challenge = self._get_rd_challenge("312304267031140")
 
     @staticmethod
     def _extract_url_from_body(body):
         urls = re.findall(r"(https?://[^\s]+)", body)
         return urls[0] if len(urls) != 0 else "N/A"
+
+    @staticmethod
+    def _get_rd_challenge(ad_id: str) -> str | None:
+        response = requests.get(
+            f"https://www.facebook.com/ads/library/?id={ad_id}",
+            headers=HEADERS,
+        )
+
+        match = re.search(r"fetch\('(/__rd_verify_[^']+)'", response.text)
+        if not match:
+            return None
+
+        rd_verify_path = match.group(1)
+        verify_response = requests.head(
+            f"https://www.facebook.com{rd_verify_path}",
+            headers=HEADERS,
+        )
+
+        set_cookie = verify_response.headers.get("Set-Cookie", "")
+        cookie_match = re.search(r"rd_challenge=([^;]+)", set_cookie)
+        return cookie_match.group(1) if cookie_match else None
 
     def _parse_raw_data(self, raw_data):
         ads = []
@@ -156,6 +175,9 @@ class FacebookAds:
         return ads
 
     def download_raw_ads(self):
+        if not self.rd_challenge:
+            raise Exception("Failed to get rd_challenge cookie")
+
         for page_id in PAGE_IDS:
             raw_path = f"raw/facebook/{page_id}"
             shutil.rmtree(raw_path, ignore_errors=True)
@@ -175,7 +197,7 @@ class FacebookAds:
                     headers=HEADERS,
                     params=None,
                     data=data,
-                    cookies=COOKIES
+                    cookies={"rd_challenge": self.rd_challenge}
                 )
 
                 with open(f"{raw_path}/{page_id}.{i:05d}.json", "w") as f:

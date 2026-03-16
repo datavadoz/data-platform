@@ -23,7 +23,7 @@ def main():
     facebook = FacebookAds(Crawler(only_local=True))
     facebook.download_raw_ads()
     facebook.convert_json_to_parquet()
-    facebook.upload_parquet_to_bq()
+    facebook.upload_parquet_to_bq(table_id=full_table_id)
 
 
 if __name__ == '__main__':
