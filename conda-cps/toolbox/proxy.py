@@ -1,14 +1,33 @@
-import copy
-
-PROXIES = {
-    "Localhost": None
-}
+import json
+import os
 
 
 class ProxyPool:
     def __init__(self, only_local=False):
-        self.priority = ["Localhost"] if only_local else ["Localhost", "ScaperDo", "ScraperApi"]
-        self.proxies = copy.deepcopy(PROXIES)
+        self.priority = ["Localhost"] if only_local else ["Localhost", "ScrapeDo", "ScraperApi"]
+        self.proxies = self._build_proxies()
+
+    @staticmethod
+    def _build_proxies() -> dict:
+        """
+        Build a dictionary of proxies from environment variables.
+        {
+            "ScrapeDo": {
+                "keys": ["key1", "key2"],
+                "https": "https://{KEY}@proxy.scrape.do"
+            },
+            "ScraperApi": {
+                "keys": ["key3"],
+                "https": "https://scraperapi:{KEY}@proxy.scraperapi.com:8001"}
+            }
+        """
+        proxies = {"Localhost": None}
+
+        raw = os.environ.get("PROXY_KEYS", "")
+        if raw:
+            proxies.update(json.loads(raw))
+
+        return proxies
 
     def pull(self):
         for proxy_provider in self.priority:
