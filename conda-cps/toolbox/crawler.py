@@ -47,7 +47,17 @@ class Crawler:
                     break
                 continue
 
-            return response.json()
+            data = response.json()
+            errors = data.get("errors")
+            if errors:
+                print(f"Got error: {errors}")
+                print("Switch to other API key or proxy provider then retry this request")
+                self.current_proxy = self.proxy_pool.pull()
+                if self.current_proxy is None:
+                    break
+                continue
+
+            return data
 
     def get(self, url, params, headers, data, cookies=None):
         return self.request("get", url, params, headers, data, cookies)
