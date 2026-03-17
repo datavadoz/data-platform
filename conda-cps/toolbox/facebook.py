@@ -208,6 +208,10 @@ class FacebookAds:
                 if not page_info["has_next_page"]:
                     break
 
+                # temporarily only fetch first 3 calls for each page to avoid hitting API key limit
+                if i >= 3:
+                    break
+
                 i += 1
                 variables["cursor"] = page_info["end_cursor"]
 
