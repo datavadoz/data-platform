@@ -113,6 +113,16 @@ resource "google_cloud_run_v2_job" "crawl_facebook_dev" {
         image   = local.cps_image
         command = ["/bin/bash"]
         args    = ["./crawl.sh", "dev", "facebook"]
+
+        env {
+          name = "PROXY_KEYS"
+          value_source {
+            secret_key_ref {
+              secret  = "PROXY_KEYS"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
@@ -268,6 +278,16 @@ resource "google_cloud_run_v2_job" "crawl_facebook_prod" {
         image   = local.cps_image
         command = ["/bin/bash"]
         args    = ["./crawl.sh", "prod", "facebook"]
+
+        env {
+          name = "PROXY_KEYS"
+          value_source {
+            secret_key_ref {
+              secret  = "PROXY_KEYS"
+              version = "latest"
+            }
+          }
+        }
       }
     }
   }
