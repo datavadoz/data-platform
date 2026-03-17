@@ -10,6 +10,7 @@ import requests
 from google.cloud import bigquery
 
 from toolbox.bigquery import BigQuery
+from toolbox.crawler import Crawler
 
 
 HEADERS = {
@@ -87,19 +88,19 @@ VARIABLES = {
 
 PAGE_IDS = {
     '114771895207322': 'CPS',
-    '110388245105469': 'CPS',
-    '111873897971603': 'CPS',
-    '340413785825514': 'CPS',
-    '124707154243128': 'DMX',
-    '332042093538446': 'FPT',
-    '133085353369973': 'CL',
-    '1557782724478208': 'SHOPEE'
+    # '110388245105469': 'CPS',
+    # '111873897971603': 'CPS',
+    # '340413785825514': 'CPS',
+    # '124707154243128': 'DMX',
+    # '332042093538446': 'FPT',
+    # '133085353369973': 'CL',
+    # '1557782724478208': 'SHOPEE'
 }
 
 
 class FacebookAds:
-    def __init__(self, crawler):
-        self.crawler = crawler
+    def __init__(self):
+        self.crawler = Crawler(proxy_list=["ScrapeDo"])
         self.bq = BigQuery()
         self.bq_client = self.bq.get_client()
         self.rd_challenge = self._get_rd_challenge("312304267031140")
@@ -205,6 +206,10 @@ class FacebookAds:
 
                 page_info = response["data"]["ad_library_main"]["search_results_connection"]["page_info"]
                 if not page_info["has_next_page"]:
+                    break
+
+                # temporarily only fetch first 3 calls for each page to avoid hitting API key limit
+                if i >= 3:
                     break
 
                 i += 1

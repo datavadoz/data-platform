@@ -7,8 +7,8 @@ from toolbox.proxy import ProxyPool
 
 
 class Crawler:
-    def __init__(self, only_local=False):
-        self.proxy_pool = ProxyPool(only_local)
+    def __init__(self, proxy_list=None):
+        self.proxy_pool = ProxyPool(proxy_list)
         self.current_proxy = self.proxy_pool.pull()
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
