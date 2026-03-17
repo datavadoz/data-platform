@@ -20,7 +20,7 @@ def main():
     full_table_id = f"{project_id}.ads.facebook"
 
     print('Crawling Facebook ads...')
-    facebook = FacebookAds(Crawler())
+    facebook = FacebookAds()
     facebook.download_raw_ads()
     facebook.convert_json_to_parquet()
     facebook.upload_parquet_to_bq(table_id=full_table_id)

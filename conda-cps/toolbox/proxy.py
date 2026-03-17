@@ -3,8 +3,9 @@ import os
 
 
 class ProxyPool:
-    def __init__(self, only_local=False):
-        self.priority = ["Localhost"] if only_local else ["Localhost", "ScrapeDo", "ScraperApi"]
+    def __init__(self, proxy_list=None):
+        self.priority = ["Localhost", "ScrapeDo", "ScraperApi"]
+        self.priority = proxy_list if proxy_list else self.priority
         self.proxies = self._build_proxies()
 
     @staticmethod

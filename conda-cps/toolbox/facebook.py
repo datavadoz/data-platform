@@ -10,6 +10,7 @@ import requests
 from google.cloud import bigquery
 
 from toolbox.bigquery import BigQuery
+from toolbox.crawler import Crawler
 
 
 HEADERS = {
@@ -98,8 +99,8 @@ PAGE_IDS = {
 
 
 class FacebookAds:
-    def __init__(self, crawler):
-        self.crawler = crawler
+    def __init__(self):
+        self.crawler = Crawler(proxy_list=["ScrapeDo"])
         self.bq = BigQuery()
         self.bq_client = self.bq.get_client()
         self.rd_challenge = self._get_rd_challenge("312304267031140")
