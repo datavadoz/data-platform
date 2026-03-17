@@ -203,8 +203,6 @@ class FacebookAds:
                 with open(f"{raw_path}/{page_id}.{i:05d}.json", "w") as f:
                     json.dump(response, f, indent=4)
 
-                print(response)
-
                 page_info = response["data"]["ad_library_main"]["search_results_connection"]["page_info"]
                 if not page_info["has_next_page"]:
                     break
