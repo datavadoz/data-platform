@@ -128,24 +128,6 @@ resource "google_cloud_run_v2_job" "crawl_facebook_dev" {
   }
 }
 
-resource "google_cloud_scheduler_job" "crawl_facebook_dev" {
-  project          = module.prj_conda_cps_dev.project_id
-  name             = "crawl-facebook"
-  region           = var.region
-  schedule         = "0 8 * * *"
-  time_zone        = "Asia/Ho_Chi_Minh"
-  attempt_deadline = "320s"
-
-  http_target {
-    http_method = "POST"
-    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.crawl_facebook_dev.name}:run"
-
-    oauth_token {
-      service_account_email = module.sa_conda_cps_cloudrun_dev.email
-    }
-  }
-}
-
 module "bq_conda_cps_dev" {
   source  = "terraform-google-modules/bigquery/google"
   version = "10.2.1"
@@ -297,7 +279,7 @@ resource "google_cloud_scheduler_job" "crawl_facebook_prod" {
   project          = module.prj_conda_cps_prod.project_id
   name             = "crawl-facebook"
   region           = var.region
-  schedule         = "0 8 * * *"
+  schedule         = "0 8 * * 1"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
