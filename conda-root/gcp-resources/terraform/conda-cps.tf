@@ -85,7 +85,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_dev" {
   project          = module.prj_conda_cps_dev.project_id
   name             = "monitor-run-rate"
   region           = var.region
-  schedule         = "0 8 * * *"
+  schedule         = "30 9 * * *"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
@@ -233,7 +233,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_prod" {
   project          = module.prj_conda_cps_prod.project_id
   name             = "monitor-run-rate"
   region           = var.region
-  schedule         = "0 8 * * *"
+  schedule         = "30 9 * * *"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
