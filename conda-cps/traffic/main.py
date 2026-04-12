@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass
+from datetime import date
 import json
 import os
 import sys
@@ -128,7 +129,7 @@ def main() -> int:
     lark_client = LarkClient(lark_config)
     bq = BigQuery()
 
-    today = time.today().strftime("%Y-%m-%d")
+    today = date.today().strftime("%Y-%m-%d")
     data = fetch_traffic_data(bq, full_table_id)
 
     msg = f'Paid channels *{today}*\n'
