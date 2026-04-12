@@ -17,6 +17,11 @@ GSHEET_ID = "14zV1me4r6dHQn6c7nBbpW549eumP9OdfVfUq3kH51uQ"
 GSHEET_TAB = "Cost runrate!Z105:AR131"
 SCHEMA_PATH = os.path.join(CUR_DIR, "schemas", "traffic.json")
 
+HEAD_MSG_TEMPLATE = """Session Tổng: {sessions_tm} | MoM: {sessions_mom})
+Cost non-VAT: (TM: {cost_non_vat_tm} | MoM: {cost_non_vat_mom} | Vs Target: {cost_non_vat_vs_target})
+CPC Tổng: (TM: {cpc_tm} | MoM: {cpc_mom})
+"""
+
 
 @dataclass
 class LarkConfig:
@@ -123,11 +128,38 @@ def main() -> int:
     lark_client = LarkClient(lark_config)
     bq = BigQuery()
 
+    today = time.today().strftime("%Y-%m-%d")
     data = fetch_traffic_data(bq, full_table_id)
-    for row in data.rows(named=True):
-        print(row)
-        # message = format_row_message(row)
-        # lark_client.broadcast(message)
+
+    msg = f'Paid channels *{today}*\n'
+    head_result = data.filter(pl.col('channels') == 'Paid channels')
+    for row in head_result.rows(named=True):
+        sessions_tm = \
+            f"{round(row['sessions_tm'], 2):,}" if row['sessions_tm'] else 'N/A'
+        sessions_mom = \
+            f"{round(row['sessions_mom'], 2):,}" if row['sessions_mom'] else 'N/A'
+        cost_non_vat_tm = \
+            f"{round(row['cost_non_vat_tm'], 2):,}" if row['cost_non_vat_tm'] else 'N/A'
+        cost_non_vat_mom = \
+            f"{round(row['cost_non_vat_mom'], 2):,}" if row['cost_non_vat_mom'] else 'N/A'
+        cost_non_vat_vs_target = \
+            f"{round(row['cost_non_vat_vs_target'], 2):,}" if row['cost_non_vat_vs_target'] else 'N/A'
+        cpc_tm = \
+            f"{round(row['cpc_tm'], 2):,}" if row['cpc_tm'] else 'N/A'
+        cpc_mom = \
+            f"{round(row['cpc_mom'], 2):,}" if row['cpc_mom'] else 'N/A'
+
+        msg += HEAD_MSG_TEMPLATE.format(
+            sessions_tm=sessions_tm,
+            sessions_mom=sessions_mom,
+            cost_non_vat_tm=cost_non_vat_tm,
+            cost_non_vat_mom=cost_non_vat_mom,
+            cost_non_vat_vs_target=cost_non_vat_vs_target,
+            cpc_tm=cpc_tm,
+            cpc_mom=cpc_mom
+        )
+
+    lark_client.broadcast(msg)
 
     return 0
 
