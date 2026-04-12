@@ -23,6 +23,19 @@ Cost non-VAT: (TM: {cost_non_vat_tm} | MoM: {cost_non_vat_mom} | Vs Target: {cos
 CPC Tổng: (TM: {cpc_tm} | MoM: {cpc_mom})
 """
 
+CHANNELS = [
+    "Tiktok ads",
+    "Criteo",
+    "Criteo New",
+    "SEM",
+    "ShoppingAds",
+    "DynamicSearch",
+    "PerformanceMax",
+    "DemandGen",
+    "Facebook Ads",
+    "Facebook Catalog",
+]
+
 
 @dataclass
 class LarkConfig:
@@ -158,6 +171,22 @@ def main() -> int:
             cost_non_vat_vs_target=cost_non_vat_vs_target,
             cpc_tm=cpc_tm,
             cpc_mom=cpc_mom
+        )
+
+    lark_client.broadcast(msg)
+
+    MSG_TEMPLATE = "{channel}: {tm} | MoM: {mom} | Vs Target: {vs_target}\n"
+    result = data.filter(pl.col('channels').is_in(CHANNELS))
+    msg = f'=== Detail Target Cost non-VAT theo Channel {today}\n'
+    for row in result.rows(named=True):
+        channel = row['channels']
+        tm = f"{round(row['cost_non_vat_tm'], 2):,}" if row['cost_non_vat_tm'] else 'N/A'
+        mom = f"{round(row['cost_non_vat_mom'], 2):,}" if row['cost_non_vat_mom'] else 'N/A'
+        vs_target = f"{round(row['cost_non_vat_vs_target'], 2):,}" if row['cost_non_vat_vs_target'] else 'N/A'
+        msg += MSG_TEMPLATE.format(
+            channel=channel,
+            tm=tm, mom=mom,
+            vs_target=vs_target
         )
 
     lark_client.broadcast(msg)
