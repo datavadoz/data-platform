@@ -177,6 +177,54 @@ resource "google_cloud_scheduler_job" "monitor_traffic_dev" {
   }
 }
 
+resource "google_cloud_run_v2_job" "monitor_cpc_dev" {
+  project  = module.prj_conda_cps_dev.project_id
+  name     = "monitor-cpc"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_dev.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./cpc.sh", "dev"]
+
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "monitor_cpc_dev" {
+  project          = module.prj_conda_cps_dev.project_id
+  name             = "monitor-cpc"
+  region           = var.region
+  schedule         = "0 14 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.monitor_cpc_dev.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_dev.email
+    }
+  }
+}
+
 module "bq_conda_cps_dev" {
   source  = "terraform-google-modules/bigquery/google"
   version = "10.2.1"
@@ -384,6 +432,54 @@ resource "google_cloud_scheduler_job" "monitor_traffic_prod" {
   http_target {
     http_method = "POST"
     uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.monitor_traffic_prod.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_prod.email
+    }
+  }
+}
+
+resource "google_cloud_run_v2_job" "monitor_cpc_prod" {
+  project  = module.prj_conda_cps_prod.project_id
+  name     = "monitor-cpc"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_prod.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./cpc.sh", "prod"]
+
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "monitor_cpc_prod" {
+  project          = module.prj_conda_cps_prod.project_id
+  name             = "monitor-cpc"
+  region           = var.region
+  schedule         = "0 14 * * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.monitor_cpc_prod.name}:run"
 
     oauth_token {
       service_account_email = module.sa_conda_cps_cloudrun_prod.email
