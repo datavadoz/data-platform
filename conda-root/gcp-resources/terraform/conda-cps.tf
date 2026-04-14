@@ -343,6 +343,54 @@ resource "google_cloud_scheduler_job" "crawl_facebook_prod" {
   }
 }
 
+resource "google_cloud_run_v2_job" "monitor_traffic_prod" {
+  project  = module.prj_conda_cps_prod.project_id
+  name     = "monitor-traffic"
+  location = var.region
+
+  template {
+    template {
+      max_retries     = 0
+      service_account = module.sa_conda_cps_cloudrun_prod.email
+      timeout         = "300s"
+
+      containers {
+        image   = local.cps_image
+        command = ["/bin/bash"]
+        args    = ["./traffic.sh", "prod"]
+
+        env {
+          name = "LARK_SECRET"
+          value_source {
+            secret_key_ref {
+              secret  = "LARK_SECRET"
+              version = "latest"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "monitor_traffic_prod" {
+  project          = module.prj_conda_cps_prod.project_id
+  name             = "monitor-traffic"
+  region           = var.region
+  schedule         = "30 9 2,5,15,20,25 * *"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_prod.project_id}/jobs/${google_cloud_run_v2_job.monitor_traffic_prod.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_prod.email
+    }
+  }
+}
+
 module "bq_conda_cps_prod" {
   source  = "terraform-google-modules/bigquery/google"
   version = "10.2.1"
