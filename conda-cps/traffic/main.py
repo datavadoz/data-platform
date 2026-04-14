@@ -145,7 +145,7 @@ def main() -> int:
     today = date.today().strftime("%Y-%m-%d")
     data = fetch_traffic_data(bq, full_table_id)
 
-    msg = f'Paid channels *{today}*\n'
+    msg = f'Paid channels {today}\n'
     head_result = data.filter(pl.col('channels') == 'Paid channels')
     for row in head_result.rows(named=True):
         sessions_tm = \
@@ -177,7 +177,7 @@ def main() -> int:
 
     MSG_TEMPLATE = "{channel}: {tm} | MoM: {mom} | Vs Target: {vs_target}\n"
     result = data.filter(pl.col('channels').is_in(CHANNELS))
-    msg = f'=== Detail Target Cost non-VAT theo Channel {today}\n'
+    msg += f'\=== Detail Target Cost non-VAT theo Channel {today}\n'
     for row in result.rows(named=True):
         channel = row['channels']
         tm = f"{round(row['cost_non_vat_tm'], 2):,}" if row['cost_non_vat_tm'] else 'N/A'
