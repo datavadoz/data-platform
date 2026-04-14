@@ -247,6 +247,17 @@ module "bq_conda_cps_ads_dev" {
   access = []
 }
 
+module "bq_conda_cps_history_dev" {
+  source  = "terraform-google-modules/bigquery/google"
+  version = "10.2.1"
+
+  project_id   = module.prj_conda_cps_dev.project_id
+  dataset_id   = "history"
+  location     = var.region
+
+  access = []
+}
+
 ### PROD ###
 module "prj_conda_cps_prod" {
   source  = "terraform-google-modules/project-factory/google"
@@ -504,6 +515,17 @@ module "bq_conda_cps_ads_prod" {
 
   project_id   = module.prj_conda_cps_prod.project_id
   dataset_id   = "ads"
+  location     = var.region
+
+  access = []
+}
+
+module "bq_conda_cps_history_prod" {
+  source  = "terraform-google-modules/bigquery/google"
+  version = "10.2.1"
+
+  project_id   = module.prj_conda_cps_prod.project_id
+  dataset_id   = "history"
   location     = var.region
 
   access = []
