@@ -82,7 +82,7 @@ class LarkClient:
                 "Authorization": f"Bearer {self.access_token}",
             },
             json={
-                "content": json.dumps({"text": message}),
+                "content": json.dumps({"text": message, "tag": "markdown"}),
                 "msg_type": "text",
                 "receive_id": receiver_id,
             },
