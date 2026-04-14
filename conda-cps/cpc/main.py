@@ -13,7 +13,6 @@ from google.cloud import bigquery
 from toolbox.bigquery import BigQuery, GSheetTable
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
-
 GSHEET_ID = "14zV1me4r6dHQn6c7nBbpW549eumP9OdfVfUq3kH51uQ"
 PLATFORMS = ["fb", "gg"]
 
@@ -29,9 +28,9 @@ def get_gsheet_table(platform: str) -> GSheetTable:
     schema_file = os.path.join(CUR_DIR, "schemas", f"{platform}.json")
 
     return GSheetTable(
-        gsheet_id=GSHEET_ID,
+        sheet_id=GSHEET_ID,
         tab_name=tab_name,
-        schema=schema_file,
+        schema_path=schema_file,
     )
 
 
