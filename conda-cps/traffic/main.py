@@ -173,11 +173,9 @@ def main() -> int:
             cpc_mom=cpc_mom
         )
 
-    lark_client.broadcast(msg)
-
     MSG_TEMPLATE = "{channel}: {tm} | MoM: {mom} | Vs Target: {vs_target}\n"
     result = data.filter(pl.col('channels').is_in(CHANNELS))
-    msg += f'\=== Detail Target Cost non-VAT theo Channel {today}\n'
+    msg += f'\n\n=== Detail Target Cost non-VAT theo Channel {today}\n'
     for row in result.rows(named=True):
         channel = row['channels']
         tm = f"{round(row['cost_non_vat_tm'], 2):,}" if row['cost_non_vat_tm'] else 'N/A'
