@@ -18,7 +18,7 @@ GSHEET_ID = "14zV1me4r6dHQn6c7nBbpW549eumP9OdfVfUq3kH51uQ"
 GSHEET_TAB = "Cost runrate!A2:AF71"
 SCHEMA_PATH = os.path.join(CUR_DIR, "schemas", "run-rate.json")
 
-NOTIFY_TEMPLATE = """=== RUN-RATE: *{dmc3}*
+NOTIFY_TEMPLATE = """=== RUN-RATE: **{dmc3}**
 - Target DS: {target_sales} tỷ, % đạt: {sales} % MoM: {mom}
 - Budget vs DS plan (Actual: {actual_budget} | Plan: {plan_budget}) | actual/plan: {actual_vs_plan_budget})
 - FB Catalog % actual/plan: {actual_vs_plan_fb_catalog}
@@ -98,8 +98,13 @@ class LarkClient:
                 "Authorization": f"Bearer {self.access_token}",
             },
             json={
-                "content": json.dumps({"text": message}),
-                "msg_type": "text",
+                "content": json.dumps({
+                    "elements": [{
+                        "tag": "markdown",
+                        "content": message,
+                    }]
+                }),
+                "msg_type": "interactive",
                 "receive_id": receiver_id,
             },
         )
