@@ -187,12 +187,12 @@ def main() -> int:
             vs_target=vs_target
         )
 
-    MSG_TEMPLATE = "{channel}: {tm} | MoM: {mom}\n"
+    MSG_TEMPLATE = "{channel}: ${tm} | MoM: {mom}\n"
     result = data.filter(pl.col('channels').is_in(CHANNELS))
     msg += f'\n=== Detail CPC theo Channel {today}\n'
     for row in result.rows(named=True):
         channel = row['channels']
-        tm = f"{round(row['cpc_tm'], 2):,}" if row['cpc_tm'] else 'N/A'
+        tm = f"{round(row['cpc_tm'], 4):,}" if row['cpc_tm'] else 'N/A'
         mom = f"{round(row['cpc_mom'], 2):,}" if row['cpc_mom'] else 'N/A'
         msg += MSG_TEMPLATE.format(
             channel=channel,
