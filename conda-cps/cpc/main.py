@@ -68,6 +68,7 @@ def main():
         bq.create_bq_table(
             full_table_id=history_table_id,
             schema=schema,
+            partition_field="date",
         )
 
     return 0

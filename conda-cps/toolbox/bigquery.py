@@ -77,9 +77,15 @@ class BigQuery:
     def create_bq_table(
             self,
             full_table_id: str,
-            schema: list[bigquery.SchemaField]
+            schema: list[bigquery.SchemaField],
+            partition_field: str | None = None,
     ) -> None:
         bq_table = bigquery.Table(full_table_id, schema=schema)
+        if partition_field:
+            bq_table.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field=partition_field,
+            )
         self.client.create_table(bq_table, exists_ok=True)
         print(f'Created {full_table_id}')
 
