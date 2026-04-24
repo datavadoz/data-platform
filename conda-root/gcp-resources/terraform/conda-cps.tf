@@ -81,11 +81,29 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
   }
 }
 
-resource "google_cloud_scheduler_job" "monitor_run_rate_dev" {
+resource "google_cloud_scheduler_job" "monitor_run_rate_weekday_dev" {
   project          = module.prj_conda_cps_dev.project_id
   name             = "monitor-run-rate"
   region           = var.region
-  schedule         = "30 10 * * *"
+  schedule         = "30 10 * * 1-5"
+  time_zone        = "Asia/Ho_Chi_Minh"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${module.prj_conda_cps_dev.project_id}/jobs/${google_cloud_run_v2_job.monitor_run_rate_dev.name}:run"
+
+    oauth_token {
+      service_account_email = module.sa_conda_cps_cloudrun_dev.email
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "monitor_run_rate_weekend_dev" {
+  project          = module.prj_conda_cps_dev.project_id
+  name             = "monitor-run-rate"
+  region           = var.region
+  schedule         = "30 10 * * 6,0"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
