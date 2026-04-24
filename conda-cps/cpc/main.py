@@ -71,6 +71,13 @@ def main():
             partition_field="date",
         )
 
+        # Ingest external data into history table
+        bq.insert_override(
+            source_table_id=external_table_id,
+            dest_table_id=history_table_id,
+            partition_field="date",
+        )
+
     return 0
 
 

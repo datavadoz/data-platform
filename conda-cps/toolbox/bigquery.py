@@ -89,5 +89,26 @@ class BigQuery:
         self.client.create_table(bq_table, exists_ok=True)
         print(f'Created {full_table_id}')
 
+    def insert_override(
+            self,
+            source_table_id: str,
+            dest_table_id: str,
+            partition_field: str,
+    ) -> None:
+        delete_query = f"""
+            DELETE FROM `{dest_table_id}`
+            WHERE {partition_field} IN (
+                SELECT DISTINCT {partition_field} FROM `{source_table_id}`
+            )
+        """
+        self.client.query(delete_query).result()
+
+        insert_query = f"""
+            INSERT INTO `{dest_table_id}`
+            SELECT * FROM `{source_table_id}`
+        """
+        self.client.query(insert_query).result()
+        print(f'Ingested data from {source_table_id} into {dest_table_id}')
+
     def get_client(self) -> bigquery.Client:
         return self.client
