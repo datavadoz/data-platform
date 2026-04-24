@@ -71,8 +71,44 @@ class BigQuery:
             self.client.delete_table(full_table_id, not_found_ok=True)
 
         bq_table = gsheet_table.get_bq_table(full_table_id)
-        bq_table = self.client.create_table(bq_table)
+        bq_table = self.client.create_table(bq_table, exists_ok=True)
         print(f'Created {bq_table.full_table_id}')
+
+    def create_bq_table(
+            self,
+            full_table_id: str,
+            schema: list[bigquery.SchemaField],
+            partition_field: str | None = None,
+    ) -> None:
+        bq_table = bigquery.Table(full_table_id, schema=schema)
+        if partition_field:
+            bq_table.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field=partition_field,
+            )
+        self.client.create_table(bq_table, exists_ok=True)
+        print(f'Created {full_table_id}')
+
+    def insert_override(
+            self,
+            source_table_id: str,
+            dest_table_id: str,
+            partition_field: str,
+    ) -> None:
+        delete_query = f"""
+            DELETE FROM `{dest_table_id}`
+            WHERE {partition_field} IN (
+                SELECT DISTINCT {partition_field} FROM `{source_table_id}`
+            )
+        """
+        self.client.query(delete_query).result()
+
+        insert_query = f"""
+            INSERT INTO `{dest_table_id}`
+            SELECT * FROM `{source_table_id}`
+        """
+        self.client.query(insert_query).result()
+        print(f'Ingested data from {source_table_id} into {dest_table_id}')
 
     def get_client(self) -> bigquery.Client:
         return self.client
