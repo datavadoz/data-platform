@@ -83,7 +83,7 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_dev" {
 
 resource "google_cloud_scheduler_job" "monitor_run_rate_weekday_dev" {
   project          = module.prj_conda_cps_dev.project_id
-  name             = "monitor-run-rate"
+  name             = "monitor-run-rate-weekday"
   region           = var.region
   schedule         = "30 10 * * 1-5"
   time_zone        = "Asia/Ho_Chi_Minh"
@@ -101,7 +101,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_weekday_dev" {
 
 resource "google_cloud_scheduler_job" "monitor_run_rate_weekend_dev" {
   project          = module.prj_conda_cps_dev.project_id
-  name             = "monitor-run-rate"
+  name             = "monitor-run-rate-weekend"
   region           = var.region
   schedule         = "30 10 * * 6,0"
   time_zone        = "Asia/Ho_Chi_Minh"
@@ -356,7 +356,7 @@ resource "google_cloud_run_v2_job" "monitor_run_rate_prod" {
 
 resource "google_cloud_scheduler_job" "monitor_run_rate_weekday_prod" {
   project          = module.prj_conda_cps_prod.project_id
-  name             = "monitor-run-rate"
+  name             = "monitor-run-rate-weekday"
   region           = var.region
   schedule         = "30 10 * * 1-5"
   time_zone        = "Asia/Ho_Chi_Minh"
@@ -374,7 +374,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_weekday_prod" {
 
 resource "google_cloud_scheduler_job" "monitor_run_rate_weekend_prod" {
   project          = module.prj_conda_cps_prod.project_id
-  name             = "monitor-run-rate"
+  name             = "monitor-run-rate-weekend"
   region           = var.region
   schedule         = "30 10 * * 6,0"
   time_zone        = "Asia/Ho_Chi_Minh"
