@@ -103,7 +103,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_weekend_dev" {
   project          = module.prj_conda_cps_dev.project_id
   name             = "monitor-run-rate-weekend"
   region           = var.region
-  schedule         = "30 10 * * 6,0"
+  schedule         = "0 12 * * 6,0"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
@@ -376,7 +376,7 @@ resource "google_cloud_scheduler_job" "monitor_run_rate_weekend_prod" {
   project          = module.prj_conda_cps_prod.project_id
   name             = "monitor-run-rate-weekend"
   region           = var.region
-  schedule         = "30 10 * * 6,0"
+  schedule         = "0 12 * * 6,0"
   time_zone        = "Asia/Ho_Chi_Minh"
   attempt_deadline = "320s"
 
