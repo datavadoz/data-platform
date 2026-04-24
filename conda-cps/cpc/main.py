@@ -53,11 +53,21 @@ def main():
 
     for platform in PLATFORMS:
         gsheet_table = get_gsheet_table(platform)
-        full_table_id = f"{project_id}.external_gsheet.cpc_{platform}"
+
+        # Create external_gsheet table
+        external_table_id = f"{project_id}.external_gsheet.cpc_{platform}"
         bq.create_bq_table_from_gsheet_table(
             gsheet_table=gsheet_table,
-            full_table_id=full_table_id,
+            full_table_id=external_table_id,
             recreate_if_exists=True,
+        )
+
+        # Create history table
+        history_table_id = f"{project_id}.history.cpc_{platform}"
+        schema = gsheet_table._get_bq_schema()
+        bq.create_bq_table(
+            full_table_id=history_table_id,
+            schema=schema,
         )
 
     return 0

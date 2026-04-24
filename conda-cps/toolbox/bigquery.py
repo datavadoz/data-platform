@@ -71,8 +71,17 @@ class BigQuery:
             self.client.delete_table(full_table_id, not_found_ok=True)
 
         bq_table = gsheet_table.get_bq_table(full_table_id)
-        bq_table = self.client.create_table(bq_table)
+        bq_table = self.client.create_table(bq_table, exists_ok=True)
         print(f'Created {bq_table.full_table_id}')
+
+    def create_bq_table(
+            self,
+            full_table_id: str,
+            schema: list[bigquery.SchemaField]
+    ) -> None:
+        bq_table = bigquery.Table(full_table_id, schema=schema)
+        self.client.create_table(bq_table, exists_ok=True)
+        print(f'Created {full_table_id}')
 
     def get_client(self) -> bigquery.Client:
         return self.client
