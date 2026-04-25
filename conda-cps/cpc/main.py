@@ -19,9 +19,9 @@ PLATFORMS = ["fb", "gg"]
 
 def get_gsheet_table(platform: str) -> GSheetTable:
     if platform == "fb":
-        tab_name = "FB_Day!A:G"
+        tab_name = "FB_Day!A:J"
     elif platform == "gg":
-        tab_name = "GG_ADs_Day!A:F"
+        tab_name = "GG_ADs_Day!A:J"
     else:
         raise ValueError(f"Unsupported platform: {platform}")
 
