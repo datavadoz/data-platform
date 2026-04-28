@@ -106,6 +106,7 @@ class BigQuery:
         insert_query = f"""
             INSERT INTO `{dest_table_id}`
             SELECT * FROM `{source_table_id}`
+            WHERE date IS NOT NULL
         """
         self.client.query(insert_query).result()
         print(f'Ingested data from {source_table_id} into {dest_table_id}')
