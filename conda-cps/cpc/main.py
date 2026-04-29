@@ -95,6 +95,9 @@ FROM result_with_prev
 """
 
 CREATE_CPC_GG_PUBLISHED_TABLE_QUERY = """
+CREATE OR REPLACE TABLE `{project_id}.history.cpc_gg_published`
+PARTITION BY date
+AS
 WITH dmc3 AS (
   SELECT
     date,
