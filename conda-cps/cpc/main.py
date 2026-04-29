@@ -16,6 +16,181 @@ CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 GSHEET_ID = "14zV1me4r6dHQn6c7nBbpW549eumP9OdfVfUq3kH51uQ"
 PLATFORMS = ["fb", "gg"]
 
+CREATE_CPC_FB_PUBLISHED_TABLE_QUERY = """
+CREATE OR REPLACE TABLE `{project_id}.history.cpc_fb_published`
+PARTITION BY date
+AS
+WITH dmc3 AS (
+  SELECT
+    date,
+    IFNULL(dmc3, 'KHÁC') AS dmc3,
+    SUM(cost) AS cost,
+    IF(
+      SUM(landing_page_views) = 0,
+      0,
+      SUM(cost) / SUM(landing_page_views) / 23500
+    ) AS cpc
+  FROM `{project_id}.history.cpc_fb`
+  GROUP BY date, dmc3
+)
+, total AS (
+  SELECT
+    date,
+    'TOTAL' AS dmc3,
+    SUM(cost) AS cost,
+    IF(
+      SUM(landing_page_views) = 0,
+      0,
+      SUM(cost) / SUM(landing_page_views) / 23500
+    ) AS cpc
+  FROM `{project_id}.history.cpc_fb`
+  GROUP BY date
+)
+, distinct_dmc3 AS (
+  SELECT DISTINCT IFNULL(dmc3, 'KHÁC') AS dmc3
+  FROM `{project_id}.history.cpc_fb`
+)
+, date_series AS (
+  SELECT DISTINCT date
+  FROM `{project_id}.history.cpc_fb`
+)
+, all_date_dmc3_combinations AS (
+  SELECT date, dmc3
+  FROM distinct_dmc3
+  CROSS JOIN date_series
+)
+, dmc3_and_total AS (
+  SELECT
+    T1.date AS date,
+    T1.dmc3 AS dmc3,
+    IFNULL(T2.cost, 0) AS cost,
+    IFNULL(T2.cpc, 0) AS cpc,
+  FROM all_date_dmc3_combinations T1
+  LEFT JOIN dmc3 T2
+    ON T1.date = T2.date
+    AND T1.dmc3 = T2.dmc3
+
+  UNION ALL
+
+  SELECT *
+  FROM total
+)
+, result_with_prev AS (
+  SELECT *,
+    IFNULL(LAG(cost) OVER (PARTITION BY dmc3 ORDER BY date), cost) AS prev_cost,
+    IFNULL(LAG(cpc) OVER (PARTITION BY dmc3 ORDER BY date), cpc) AS prev_cpc,
+  FROM dmc3_and_total
+)
+
+SELECT *,
+  IF(prev_cost <> 0,
+    (cost / prev_cost - 1) * 100,
+    IF(cost = 0, 0, 100)
+  ) cost_pct,
+  IF(prev_cpc <> 0,
+    (cpc / prev_cpc - 1) * 100,
+    IF(cpc = 0, 0, 100)
+  ) cpc_pct,
+FROM result_with_prev
+"""
+
+CREATE_CPC_GG_PUBLISHED_TABLE_QUERY = """
+WITH dmc3 AS (
+  SELECT
+    date,
+    IFNULL(dmc3, 'KHÁC') AS dmc3,
+    IFNULL(channel, 'KHÁC') AS channel,
+    SUM(cost) AS cost,
+    IF(
+      SUM(clicks) = 0,
+      0,
+      SUM(cost) / SUM(clicks) / 23500
+    ) AS cpc
+  FROM `{project_id}.history.cpc_gg`
+  GROUP BY date, dmc3, channel
+)
+, total AS (
+  SELECT
+    date,
+    'TOTAL' AS dmc3,
+    IFNULL(channel, 'KHÁC') AS channel,
+    SUM(cost) AS cost,
+    IF(
+      SUM(clicks) = 0,
+      0,
+      SUM(cost) / SUM(clicks) / 23500
+    ) AS cpc
+  FROM `{project_id}.history.cpc_gg`
+  GROUP BY date, channel
+)
+, distinct_dmc3 AS (
+  SELECT DISTINCT IFNULL(dmc3, 'KHÁC') AS dmc3
+  FROM `{project_id}.history.cpc_gg`
+)
+, distinct_channel AS (
+  SELECT DISTINCT IFNULL(channel, 'KHÁC') AS channel
+  FROM `{project_id}.history.cpc_gg`
+)
+, distinct_date AS (
+  SELECT DISTINCT date,
+  FROM `{project_id}.history.cpc_gg`
+)
+, all_dmc3_channel_per_date AS (
+  SELECT DISTINCT date, dmc3, channel
+  FROM distinct_date
+  CROSS JOIN distinct_dmc3
+  CROSS JOIN distinct_channel
+)
+, all_channel_per_date AS (
+  SELECT date, channel
+  FROM distinct_date
+  CROSS JOIN distinct_channel
+)
+, union_result AS (
+  SELECT
+    T1.date AS date,
+    T1.dmc3 AS dmc3,
+    T1.channel AS channel,
+    IFNULL(T2.cost, 0) AS cost,
+    IFNULL(T2.cpc, 0) AS cpc,
+  FROM all_dmc3_channel_per_date T1
+  LEFT JOIN dmc3 T2
+    ON T1.date = T2.date
+    AND T1.dmc3 = T2.dmc3
+    AND T1.channel = T2.channel
+
+  UNION ALL
+
+  SELECT
+    T3.date AS date,
+    'TOTAL' AS dmc3,
+    T3.channel AS channel,
+    IFNULL(T4.cost, 0) AS cost,
+    IFNULL(T4.cpc, 0) AS cpc,
+  FROM all_channel_per_date T3
+  LEFT JOIN total T4
+    ON T3.date = T4.date
+    AND T3.channel = T4.channel
+)
+, union_result_with_prev AS (
+  SELECT *,
+    IFNULL(LAG(cost) OVER (PARTITION BY dmc3, channel ORDER BY date), cost) AS prev_cost,
+    IFNULL(LAG(cpc) OVER (PARTITION BY dmc3, channel ORDER BY date), cpc) AS prev_cpc,
+  FROM union_result
+  ORDER BY date, dmc3, channel
+)
+
+SELECT *,
+  IF(prev_cost <> 0,
+    (cost / prev_cost - 1) * 100,
+    IF(cost = 0, 0, 100)
+  ) cost_pct,
+  IF(prev_cpc <> 0,
+    (cpc / prev_cpc - 1) * 100,
+    IF(cpc = 0, 0, 100)
+  ) cpc_pct,
+FROM union_result_with_prev
+"""
 
 def get_gsheet_table(platform: str) -> GSheetTable:
     if platform == "fb":
@@ -77,6 +252,19 @@ def main():
             dest_table_id=history_table_id,
             partition_field="date",
         )
+
+        # Create the published table
+        if platform == "fb":
+            published_table_id = f"{project_id}.history.cpc_fb_published"
+            query_template = CREATE_CPC_FB_PUBLISHED_TABLE_QUERY
+        elif platform == "gg":
+            published_table_id = f"{project_id}.history.cpc_gg_published"
+            query_template = CREATE_CPC_GG_PUBLISHED_TABLE_QUERY
+        else:
+            raise ValueError(f"Unsupported platform: {platform}")
+
+        bq.client.query(query_template.format(project_id=project_id)).result()
+        print(f'Created {published_table_id}')
 
     return 0
 
