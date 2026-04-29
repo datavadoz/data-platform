@@ -402,7 +402,7 @@ def main():
             pl.col("dmc3"),
             pl.col("channel") if "channel" in latest_result.columns else pl.lit(None).alias("channel"),
             (
-                pl.when(pl.col("cost_pct") >= 0).then(pl.lit("🟢 ")).otherwise(pl.lit("🔴 "))
+                pl.when(pl.col("cost_pct") >= 0).then(pl.lit("🔴 ")).otherwise(pl.lit("🟢 "))
                 + pl.col("cost").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cost_pct").round(2).cast(pl.Utf8)
@@ -410,7 +410,7 @@ def main():
             ).alias("cost (D)"),
             pl.col("prev_cost").round(2).alias("prev_cost (D-1)"),
             (
-                pl.when(pl.col("cpc_pct") >= 0).then(pl.lit("🟢 ")).otherwise(pl.lit("🔴 "))
+                pl.when(pl.col("cpc_pct") >= 0).then(pl.lit("🔴 ")).otherwise(pl.lit("🟢 "))
                 + pl.col("cpc").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cpc_pct").round(2).cast(pl.Utf8)
