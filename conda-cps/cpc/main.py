@@ -240,6 +240,66 @@ class LarkClient:
         response.raise_for_status()
         return response.json()["tenant_access_token"]
 
+    def send_table(self, receiver_id: str, title: str, df: pl.DataFrame) -> None:
+        columns = [
+            {
+                "name": col,
+                "display_name": col,
+                "data_type": "text",
+                "width": "auto",
+                "horizontal_align": "left",
+            }
+            for col in df.columns
+        ]
+        rows = [
+            {col: str(val) for col, val in zip(df.columns, row)}
+            for row in df.iter_rows()
+        ]
+        card = {
+            "schema": "2.0",
+            "header": {
+                "title": {"tag": "plain_text", "content": title},
+            },
+            "body": {
+                "elements": [
+                    {
+                        "tag": "table",
+                        "page_size": 10,
+                        "row_height": "low",
+                        "header_style": {
+                            "text_align": "left",
+                            "bold": True,
+                            "background_style": "grey",
+                        },
+                        "columns": columns,
+                        "rows": rows,
+                    }
+                ]
+            },
+        }
+        response = requests.post(
+            f"{self.BASE_URL}/im/v1/messages",
+            params={"receive_id_type": "chat_id"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.access_token}",
+            },
+            json={
+                "content": json.dumps(card),
+                "msg_type": "interactive",
+                "receive_id": receiver_id,
+            },
+        )
+        print(
+            f"Notification sent to {receiver_id}, "
+            f"status: {response.status_code}, body: {response.text}"
+        )
+
+    def broadcast_table(self, title: str, df: pl.DataFrame, delay: float = 3.0) -> None:
+        for receiver_id in self.config.receiver_ids:
+            self.send_table(receiver_id, title, df)
+            time.sleep(delay)
+
     def send_message(self, receiver_id: str, message: str) -> None:
         response = requests.post(
             f"{self.BASE_URL}/im/v1/messages",
@@ -397,8 +457,10 @@ def main():
         print(f"Latest result for {platform}:\n{display_result}")
 
         if not display_result.is_empty():
-            message = f"**CPC Alert [{platform.upper()}]**\n```\n{df_to_markdown(display_result)}\n```"
-            lark_client.broadcast(message)
+            lark_client.broadcast_table(
+                title=f"CPC Alert [{platform.upper()}]",
+                df=display_result,
+            )
 
     return 0
 
