@@ -397,7 +397,7 @@ def main():
         print(f"Latest result for {platform}:\n{display_result}")
 
         if not display_result.is_empty():
-            message = f"**CPC Alert [{platform.upper()}]**\n{df_to_markdown(display_result)}"
+            message = f"**CPC Alert [{platform.upper()}]**\n```\n{df_to_markdown(display_result)}\n```"
             lark_client.broadcast(message)
 
     return 0
