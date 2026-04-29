@@ -93,7 +93,6 @@ SELECT *,
   ) cpc_pct,
 FROM result_with_prev
 """
-
 CREATE_CPC_GG_PUBLISHED_TABLE_QUERY = """
 CREATE OR REPLACE TABLE `{project_id}.history.cpc_gg_published`
 PARTITION BY date
@@ -194,6 +193,16 @@ SELECT *,
   ) cpc_pct,
 FROM union_result_with_prev
 """
+GET_LATEST_RESULT_QUERY = """
+SELECT *
+FROM `{published_table_id}`
+WHERE (ABS(cost_pct) > 10 OR ABS(cpc_pct) > 10)
+  AND date = (
+    SELECT MAX(date)
+    FROM `{published_table_id}`
+  )
+"""
+
 
 def get_gsheet_table(platform: str) -> GSheetTable:
     if platform == "fb":
@@ -268,6 +277,33 @@ def main():
 
         bq.client.query(query_template.format(project_id=project_id)).result()
         print(f'Created {published_table_id}')
+
+        # Get latest result
+        latest_result = pl.from_arrow(
+            bq.client.query(
+                GET_LATEST_RESULT_QUERY.format(
+                    published_table_id=published_table_id
+                )
+            ).result().to_arrow()
+        )
+
+        # Transform into display format
+        display_result = latest_result.select([
+            pl.col("dmc3"),
+            pl.col("channel") if "channel" in latest_result.columns else pl.lit(None).alias("channel"),
+            (
+                pl.col("cost").cast(pl.Utf8)
+                + pl.format(" ({:.2f}%)", pl.col("cost_pct"))
+            ).alias("cost (D)"),
+            pl.col("prev_cost").alias("prev_cost (D-1)"),
+            (
+                pl.col("cpc").cast(pl.Utf8)
+                + pl.format(" ({:.2f}%)", pl.col("cpc_pct"))
+            ).alias("cpc (D)"),
+            pl.col("prev_cpc").alias("prev_cpc (D-1)"),
+        ])
+        print(f"Latest result for {platform}:\n{display_result}")
+
 
     return 0
 
