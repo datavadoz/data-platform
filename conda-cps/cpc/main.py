@@ -204,6 +204,83 @@ WHERE (ABS(cost_pct) > 10 OR ABS(cpc_pct) > 10)
 """
 
 
+@dataclass
+class LarkConfig:
+    app_id: str
+    app_secret: str
+    receiver_ids: list[str]
+
+    @classmethod
+    def from_env(cls) -> "LarkConfig":
+        secret = os.environ.get("LARK_SECRET", "")
+        if not secret:
+            raise ValueError("LARK_SECRET environment variable is not set")
+
+        data = json.loads(secret)
+        return cls(
+            app_id=data["app_id"],
+            app_secret=data["app_secret"],
+            receiver_ids=data.get("receiver_ids", []),
+        )
+
+
+class LarkClient:
+    BASE_URL = "https://open.larksuite.com/open-apis"
+
+    def __init__(self, config: LarkConfig):
+        self.config = config
+        self.access_token = self._get_access_token()
+
+    def _get_access_token(self) -> str:
+        response = requests.post(
+            f"{self.BASE_URL}/auth/v3/tenant_access_token/internal",
+            headers={"Content-Type": "application/json"},
+            json={"app_id": self.config.app_id, "app_secret": self.config.app_secret},
+        )
+        response.raise_for_status()
+        return response.json()["tenant_access_token"]
+
+    def send_message(self, receiver_id: str, message: str) -> None:
+        response = requests.post(
+            f"{self.BASE_URL}/im/v1/messages",
+            params={"receive_id_type": "chat_id"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.access_token}",
+            },
+            json={
+                "content": json.dumps({
+                    "elements": [{
+                        "tag": "markdown",
+                        "content": message,
+                    }]
+                }),
+                "msg_type": "interactive",
+                "receive_id": receiver_id,
+            },
+        )
+        print(
+            f"Notification sent to {receiver_id}, "
+            f"status: {response.status_code}, body: {response.text}"
+        )
+
+    def broadcast(self, message: str, delay: float = 3.0) -> None:
+        for receiver_id in self.config.receiver_ids:
+            self.send_message(receiver_id, message)
+            time.sleep(delay)
+
+
+def df_to_markdown(df: pl.DataFrame) -> str:
+    headers = df.columns
+    header_row = "| " + " | ".join(headers) + " |"
+    separator = "| " + " | ".join(["---"] * len(headers)) + " |"
+    rows = [
+        "| " + " | ".join(str(v) for v in row) + " |"
+        for row in df.iter_rows()
+    ]
+    return "\n".join([header_row, separator] + rows)
+
+
 def get_gsheet_table(platform: str) -> GSheetTable:
     if platform == "fb":
         tab_name = "FB_Day!A:J"
@@ -237,6 +314,8 @@ def main():
     project_id = "conda-cps-dev" if args.env == "dev" else "conda-cps-prod"
 
     bq = BigQuery()
+    lark_config = LarkConfig.from_env()
+    lark_client = LarkClient(lark_config)
 
     for platform in PLATFORMS:
         gsheet_table = get_gsheet_table(platform)
@@ -292,22 +371,34 @@ def main():
             pl.col("dmc3"),
             pl.col("channel") if "channel" in latest_result.columns else pl.lit(None).alias("channel"),
             (
-                pl.col("cost").cast(pl.Utf8)
+                pl.col("cost").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cost_pct").round(2).cast(pl.Utf8)
                 + pl.lit("%)")
             ).alias("cost (D)"),
-            pl.col("prev_cost").alias("prev_cost (D-1)"),
+            pl.col("prev_cost").round(2).alias("prev_cost (D-1)"),
             (
-                pl.col("cpc").cast(pl.Utf8)
+                pl.col("cpc").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cpc_pct").round(2).cast(pl.Utf8)
                 + pl.lit("%)")
             ).alias("cpc (D)"),
-            pl.col("prev_cpc").alias("prev_cpc (D-1)"),
+            pl.col("prev_cpc").round(2).alias("prev_cpc (D-1)"),
         ])
+
+        if platform == "fb":
+            display_result = display_result.drop("channel")
+
+        display_result = display_result.sort(
+            pl.col("dmc3").eq("TOTAL").cast(pl.Int8),
+            descending=True,
+        )
+
         print(f"Latest result for {platform}:\n{display_result}")
 
+        if not display_result.is_empty():
+            message = f"**CPC Alert [{platform.upper()}]**\n{df_to_markdown(display_result)}"
+            lark_client.broadcast(message)
 
     return 0
 
