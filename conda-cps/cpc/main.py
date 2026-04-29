@@ -300,35 +300,6 @@ class LarkClient:
             self.send_table(receiver_id, title, df)
             time.sleep(delay)
 
-    def send_message(self, receiver_id: str, message: str) -> None:
-        response = requests.post(
-            f"{self.BASE_URL}/im/v1/messages",
-            params={"receive_id_type": "chat_id"},
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.access_token}",
-            },
-            json={
-                "content": json.dumps({
-                    "elements": [{
-                        "tag": "markdown",
-                        "content": message,
-                    }]
-                }),
-                "msg_type": "interactive",
-                "receive_id": receiver_id,
-            },
-        )
-        print(
-            f"Notification sent to {receiver_id}, "
-            f"status: {response.status_code}, body: {response.text}"
-        )
-
-    def broadcast(self, message: str, delay: float = 3.0) -> None:
-        for receiver_id in self.config.receiver_ids:
-            self.send_message(receiver_id, message)
-            time.sleep(delay)
-
 
 def df_to_markdown(df: pl.DataFrame) -> str:
     headers = df.columns
@@ -431,14 +402,16 @@ def main():
             pl.col("dmc3"),
             pl.col("channel") if "channel" in latest_result.columns else pl.lit(None).alias("channel"),
             (
-                pl.col("cost").round(2).cast(pl.Utf8)
+                pl.when(pl.col("cost_pct") >= 0).then(pl.lit("🟢 ")).otherwise(pl.lit("🔴 "))
+                + pl.col("cost").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cost_pct").round(2).cast(pl.Utf8)
                 + pl.lit("%)")
             ).alias("cost (D)"),
             pl.col("prev_cost").round(2).alias("prev_cost (D-1)"),
             (
-                pl.col("cpc").round(2).cast(pl.Utf8)
+                pl.when(pl.col("cpc_pct") >= 0).then(pl.lit("🟢 ")).otherwise(pl.lit("🔴 "))
+                + pl.col("cpc").round(2).cast(pl.Utf8)
                 + pl.lit(" (")
                 + pl.col("cpc_pct").round(2).cast(pl.Utf8)
                 + pl.lit("%)")
@@ -457,8 +430,9 @@ def main():
         print(f"Latest result for {platform}:\n{display_result}")
 
         if not display_result.is_empty():
+            latest_date = latest_result["date"].max()
             lark_client.broadcast_table(
-                title=f"CPC Alert [{platform.upper()}]",
+                title=f"CPC Alert [{platform.upper()}] - {latest_date}",
                 df=display_result,
             )
 
