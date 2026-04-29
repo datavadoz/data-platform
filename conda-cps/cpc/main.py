@@ -293,12 +293,16 @@ def main():
             pl.col("channel") if "channel" in latest_result.columns else pl.lit(None).alias("channel"),
             (
                 pl.col("cost").cast(pl.Utf8)
-                + pl.format(" ({:.2f}%)", pl.col("cost_pct"))
+                + pl.lit(" (")
+                + pl.col("cost_pct").round(2).cast(pl.Utf8)
+                + pl.lit("%)")
             ).alias("cost (D)"),
             pl.col("prev_cost").alias("prev_cost (D-1)"),
             (
                 pl.col("cpc").cast(pl.Utf8)
-                + pl.format(" ({:.2f}%)", pl.col("cpc_pct"))
+                + pl.lit(" (")
+                + pl.col("cpc_pct").round(2).cast(pl.Utf8)
+                + pl.lit("%)")
             ).alias("cpc (D)"),
             pl.col("prev_cpc").alias("prev_cpc (D-1)"),
         ])
